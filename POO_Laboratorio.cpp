@@ -1,57 +1,131 @@
 #include <iostream>
+#include <vector>
+#include <string>
+
 using namespace std;
 
-class SerVivo {
-protected:
+class Producto {
+public:
+    int codigo;
     string nombre;
-    int edad;
-public:
-    SerVivo(string n, int e) : nombre(n), edad(e) {}
-    virtual void emitirSonido() {
-        cout << nombre << " emite un sonido." << endl;
-    }
+    double precio;
+    int stock;
+
+    Producto(int c, string n, double p, int s) : codigo(c), nombre(n), precio(p), stock(s) {}
 };
 
-class Perro : public SerVivo {
-public:
-    Perro(string n, int e) : SerVivo(n, e) {}
-    void emitirSonido() override {
-        cout << nombre << " ladra: Gua Gua!" << endl;
-    }
-};
-
-class Vehiculo {
+class Inventario {
 private:
-    string marca;
-    int velocidad;
+    vector<Producto> productos;
+
 public:
-    Vehiculo(string m, int v) : marca(m), velocidad(v) {}
-    void acelerar() {
-        velocidad += 20;
-        cout << "El vehículo " << marca << " ahora va a " << velocidad << " km/h." << endl;
+    void agregarProducto(int codigo, string nombre, double precio, int stock) {
+        Producto nuevoProducto(codigo, nombre, precio, stock);
+        productos.push_back(nuevoProducto);
+    }
+
+    void mostrarInventario() {
+        if (productos.empty()) {
+            cout << "No hay productos en el inventario." << endl;
+            return;
+        }
+        for (const auto& producto : productos) {
+            cout << "Código: " << producto.codigo << ", Nombre: " << producto.nombre
+                << ", Precio: $" << producto.precio << ", Stock: " << producto.stock << endl;
+        }
+    }
+
+    Producto* buscarProducto(int codigo) {
+        for (auto& producto : productos) {
+            if (producto.codigo == codigo) {
+                return &producto;
+            }
+        }
+        return nullptr;
+    }
+
+    void actualizarStock(int codigo, int nuevoStock) {
+        Producto* producto = buscarProducto(codigo);
+        if (producto) {
+            producto->stock = nuevoStock;
+            cout << "El stock ha sido actualizado." << endl;
+        }
+        else {
+            cout << "Producto no encontrado." << endl;
+        }
+    }
+
+    double calcularValorTotal() {
+        double valorTotal = 0;
+        for (const auto& producto : productos) {
+            valorTotal += producto.precio * producto.stock;
+        }
+        return valorTotal;
     }
 };
 
-class Humano {
-private:
-    string nombre;
-    int edad;
-public:
-    Humano(string n, int e) : nombre(n), edad(e) {}
-    void presentarse() {
-        cout << "Hola, soy " << nombre << " y tengo " << edad << " años." << endl;
-    }
-};
+void mostrarMenu() {
+    cout << "Sistema de Inventario" << endl;
+    cout << "1. Agregar producto" << endl;
+    cout << "2. Mostrar inventario" << endl;
+    cout << "3. Buscar producto por código" << endl;
+    cout << "4. Actualizar stock" << endl;
+    cout << "5. Calcular valor total" << endl;
+    cout << "6. Salir" << endl;
+}
 
 int main() {
-    Perro miPerro("Polizon", 3);
-    miPerro.emitirSonido();
+    Inventario inventario;
+    int opcion, codigo, stock;
+    string nombre;
+    double precio;
 
-    Vehiculo miMoto("Yamaha", 80);
-    miMoto.acelerar();
+    while (true) {
+        mostrarMenu();
+        cout << "Seleccione una opción: ";
+        cin >> opcion;
 
-    Humano persona2("Sebas", 19);
-    persona2.presentarse();
-
-    return 0;
+        switch (opcion) {
+        case 1:
+            cout << "Ingrese código del producto: ";
+            cin >> codigo;
+            cout << "Ingrese nombre del producto: ";
+            cin.ignore();
+            getline(cin, nombre);
+            cout << "Ingrese precio del producto: ";
+            cin >> precio;
+            cout << "Ingrese stock del producto: ";
+            cin >> stock;
+            inventario.agregarProducto(codigo, nombre, precio, stock);
+            break;
+        case 2:
+            inventario.mostrarInventario();
+            break;
+        case 3:
+            cout << "Ingrese código del producto: ";
+            cin >> codigo;
+            if (Producto* producto = inventario.buscarProducto(codigo)) {
+                cout << "Código: " << producto->codigo << ", Nombre: " << producto->nombre
+                    << ", Precio: $" << producto->precio << ", Stock: " << producto->stock << endl;
+            }
+            else {
+                cout << "Producto no encontrado." << endl;
+            }
+            break;
+        case 4:
+            cout << "Ingrese código del producto: ";
+            cin >> codigo;
+            cout << "Ingrese nuevo stock: ";
+            cin >> stock;
+            inventario.actualizarStock(codigo, stock);
+            break;
+        case 5:
+            cout << "El valor total del inventario es: $" << inventario.calcularValorTotal() << endl;
+            break;
+        case 6:
+            return 0;
+        default:
+            cout << "Opción no válida. Intente nuevamente." << endl;
+        }
+    }
 }
